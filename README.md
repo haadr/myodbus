@@ -2,6 +2,8 @@
 
 myodbus is a simple class to connect to and use the Myo armband via the GATT protocol standard on Linux using bluez and dbus. The main class is implemented in myodbus.py, and some sample code to demonstrate its use can be found in sample.py.
 
+** Note: You might want to use https://github.com/IanHarvey/bluepy or https://github.com/mamo91/Dongleless-myo instead.
+
 
 ## Usage:
 ```
