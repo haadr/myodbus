@@ -172,6 +172,12 @@ class MyoDbus(object):
         except:
             raise
 
+    def getName(self):
+        try:
+            return self.myo_obj.GetAll(BLUEZ_DEV_IFACE,dbus_interface=DBUS_PROP_IFACE )['Name']
+        except:
+            raise
+
     def getSensorValue(self):
         try:
             return self.imu_val_char.ReadValue({}, dbus_interface=BLUEZ_GATT_CHAR_IFACE,byte_arrays=True)
