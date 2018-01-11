@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import dbus
 import sys
 import time
@@ -44,6 +46,7 @@ class MyoDbus(object):
     def __init__(self, system_bus, myo_path):
         self.system_bus = system_bus
         self.myo_basepath = myo_path
+        self.myo_name = None
 
         # Try to init
         self.myo_obj      = self.system_bus.get_object(BLUEZ_NAME, myo_path)
@@ -52,7 +55,8 @@ class MyoDbus(object):
         self.bat_val_char = self.system_bus.get_object(BLUEZ_NAME, myo_path + BATTERY_LEVEL_CHAR_PATH )
 
     # TODO check proper error handling
-    def connect(self, wait=None, verbose=None):
+    def connect(self, wait=None):
+        print("Connecting...")
         try:
             self.myo_obj.Connect(dbus_interface=BLUEZ_DEV_IFACE)
         except Exception as instance:
@@ -61,20 +65,21 @@ class MyoDbus(object):
                 print("Error: Device not found at the specified path: {}".format( self.myo_basepath ))
                 sys.exit(-1)
 
+        else:
             # Check if it's actually up and populated in dbus/bluez
             if(wait):
-                print("Connecting ")
-                error = "Not connected"
-                while(error == "Not connected"):
-                    try:
-                        self.myo_cmd_char.ReadValue({},dbus_interface=BLUEZ_GATT_CHAR_IFACE, byte_arrays=True,)
-                        error = ""
-                    except dbus.exceptions.DBusException as instance:
-                        error = instance.args[0]
-                    time.sleep(.1)
-            if(verbose):
-                self.vibrate(duration="short")
-                self.printInfo()
+                print("Connected, waiting to make sure the dbus objects are ready ")
+
+                while(True):
+                    if(self.isConnected):
+                        break
+                    else:
+                        print(".", end='')
+                        time.sleep(.1)
+
+            self.myo_name = self.getName()
+            self.vibrate(duration="short")
+            print("Done waiting, sensor {} is ready".format(self.myo_name))
 
     def disconnect(self):
         try:
@@ -85,13 +90,14 @@ class MyoDbus(object):
             raise
 
     def isConnected(self):
-        if self.myo_obj.GetAll(BLUEZ_DEV_IFACE,dbus_interface=DBUS_PROP_IFACE )['Connected'] == 0:
+        try:
+            if self.myo_obj.GetAll(BLUEZ_DEV_IFACE,dbus_interface=DBUS_PROP_IFACE )['Connected'] == 0:
+                return False
+            else:
+                return True
+        except Exception as e:
+            print("Exception in isConnected: {}".format(e))
             return False
-        else:
-            return True
-
-    def printInfo(self):
-        print("STUB: MyoDBus.printInfo()")
 
     """ Command functions """
     def vibrate(self, duration=None):
