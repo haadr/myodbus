@@ -149,9 +149,15 @@ class MyoDbus(object):
 
     def attachIMUHandler(self, func ):
         try:
-            self.imu_val_char.connect_to_signal( "PropertiesChanged", func, byte_arrays=True, path_keyword='myo_basepath' )
+            self.signal_receiver = self.imu_val_char.connect_to_signal( "PropertiesChanged", func, byte_arrays=True, path_keyword='myo_basepath' )
         except:
             print("Failed to connect function to IMU signal. {}".format( sys.exc_info()[0] ) )
+
+    def detachIMUHandler(self):
+        try:
+            self.signal_receiver.remove()
+        except:
+            print("Failed to remove signal receiver. {}".format(sys.exc_info()[0]))
 
     def enableIMU(self):
         global ENABLE_IMU_CMD
